@@ -19,14 +19,20 @@ ups.read_until(b">> ",timeout)
 ups.write(b"e\r\n")
 ups.read_until(b"$> ",timeout)
 if (sys.argv[3] == "on") or (sys.argv[3] == "off"):
+    print("Turning load 1 " + sys.argv[3] + ".")
     ups.write(("loadctl " + sys.argv[3] + " -o 1\r\n").encode("ascii"))
     ups.read_until(b'[y/n]? ',timeout)
     ups.write(b"y\r\n")
     ups.read_until(b'$> ',timeout)
+else:
+    print("Not changing load 1.")
 if (sys.argv[4] == "on") or (sys.argv[4] == "off"):
+    print("Turning load 2 " + sys.argv[4] + ".")
     ups.write(("loadctl " + sys.argv[4] + " -o 2\r\n").encode("ascii"))
     ups.read_until(b'[y/n]? ',timeout)
     ups.write(b"y\r\n")
     ups.read_until(b'$> ',timeout)
+else:
+    print("Not changing load 2.")
 ups.write(b"exit\r\n")
 ups.read_until(b"Farewell, localadmin.\r\r\n")
