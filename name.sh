@@ -1,8 +1,7 @@
 #!/bin/zsh
 
 CAMPUS="PLD"
-PART_OF_SERVICE="$1"
-ARG="${2:-now}"
+PART_OF_SERVICE="$@"
 TIME="$(date +"%H%M")"
 DOW="$(date +"%u")"
 DATE="$(date +"%m.%d")"
@@ -32,4 +31,4 @@ elif [ "$DOW" -eq 7 ]; then
     exit
   fi
 fi
-date +"$CAMPUS $PART_OF_SERVICE Testing %m.%d - %H%M.mp4"
+date +"$CAMPUS $PART_OF_SERVICE Testing %m.%d - %H%M"
