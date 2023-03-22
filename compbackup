@@ -2,4 +2,6 @@
 
 DIR="$(grep "backupdir=" ~/.compbackup.config | cut -d'=' -f2)"
 DATE="$(date +'companion-backup-%Y%m%d.companionconfig')"
-curl http://10.45.0.66:8888/int/full_export > "$DIR/$DATE"
+config="$(curl http://10.45.0.66:8888/int/full_export)"
+
+test "$config" && echo "$config" > "$DIR/$DATE"
