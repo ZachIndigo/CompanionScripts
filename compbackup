@@ -1,0 +1,4 @@
+#!/bin/sh
+
+DATE="$(date +'companion-backup-%Y%m%d.json')"
+curl http://10.45.0.66:8888/int/full_export > $DATE
