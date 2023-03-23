@@ -13,7 +13,7 @@ unset DIR DATE IPADDR PORT config
 
 DATE="$(date +'companion-backup-%Y%m%d.companionconfig')"
 DIR="$(grep "backupdir=" $CONFIG_PATH | cut -d'=' -f2)"
-IPADDR="$(grep "switcher_ip" $CONFIG_PATH | cut -d'=' -f2)"
+IPADDR="$(grep "ip" $CONFIG_PATH | cut -d'=' -f2)"
 PORT="$(grep "port" $CONFIG_PATH | cut -d'=' -f2)"
 if [ -z "$DATE" -o -z "$DIR" -o -z "$IPADDR" ]; then
   printf "Something isn't right!\n" 1>&2
