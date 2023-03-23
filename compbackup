@@ -1,7 +1,21 @@
 #!/bin/sh
 
-DIR="$(grep "backupdir=" ~/.compbackup.config | cut -d'=' -f2)"
+unset CONFIG_PATH
+[ -f "~/.compbackup.config" ] && CONFIG_PATH="~/.compbackup.config"
+[ -f "./.compbackup.config" ] && CONFIG_PATH="./.compbackup.config"
+
+if [ -z "$CONFIG_PATH" ]; then
+  printf "No config found!\n"
+  exit 1
+fi
+
+unset DIR DATE IPADDR PORT config
+
 DATE="$(date +'companion-backup-%Y%m%d.companionconfig')"
-config="$(curl http://10.45.0.66:8888/int/full_export)"
+DIR="$(grep "backupdir=" $CONFIG_PATH | cut -d'=' -f2)"
+IPADDR="$(grep "switcher_ip" $CONFIG_PATH | cut -d'=' -f2)"
+PORT="$(grep "port" $CONFIG_PATH | cut -d'=' -f2)"
+config="$(curl http://$IPADDR:"${PORT:-8888}"/int/full_export)"
 
 test "$config" && echo "$config" > "$DIR/$DATE"
+
