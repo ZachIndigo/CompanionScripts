@@ -5,7 +5,7 @@ unset CONFIG_PATH
 [ -f "./.compbackup.config" ] && CONFIG_PATH="./.compbackup.config"
 
 if [ -z "$CONFIG_PATH" ]; then
-  printf "No config found!\n"
+  printf "No config found!\n" 1>&2
   exit 1
 fi
 
@@ -15,6 +15,15 @@ DATE="$(date +'companion-backup-%Y%m%d.companionconfig')"
 DIR="$(grep "backupdir=" $CONFIG_PATH | cut -d'=' -f2)"
 IPADDR="$(grep "switcher_ip" $CONFIG_PATH | cut -d'=' -f2)"
 PORT="$(grep "port" $CONFIG_PATH | cut -d'=' -f2)"
+if [ -z "$DATE" -o -z "$DIR" -o -z "$IPADDR" ]; then
+  printf "Something isn't right!\n" 1>&2
+  printf "Variables:\n"
+  printf "file name = %s\n" "$DATE"
+  printf "dropbox dir = %s\n" "$DIR"
+  printf "ip address = %s\n" "$IPADDR"
+  printf "port = %d\n" "${PORT:-8888}"
+  exit 1
+fi
 config="$(curl http://$IPADDR:"${PORT:-8888}"/int/full_export)"
 
 test "$config" && echo "$config" > "$DIR/$DATE"
