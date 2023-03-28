@@ -1,7 +1,7 @@
 #!/bin/zsh
 
-CAMPUS="PLD"
-PART_OF_SERVICE="$@"
+CAMPUS="$1"
+PART_OF_SERVICE="${*:2}"
 TIME="$(date +"%H%M")"
 DOW="$(date +"%u")"
 DATE="$(date +"%m.%d")"
