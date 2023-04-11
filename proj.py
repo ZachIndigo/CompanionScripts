@@ -4,19 +4,19 @@ from pysdcp import Projector
 from time import sleep
 import sys
 
-PROJ_IP_ADDRESS="10.45.0.100"
-
 args_len = len(sys.argv)
 
 first_part = ""
 is_second_part = False
 
-if args_len == 1:
+if args_len <= 2:
     exit()
+
+PROJ_IP_ADDRESS=sys.argv[1]
 
 pj = Projector(PROJ_IP_ADDRESS)
 
-for i in range(1, args_len):
+for i in range(2, args_len):
     if is_second_part == False:
         if sys.argv[i] == "power":
             is_second_part = True
