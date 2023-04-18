@@ -2,12 +2,16 @@
 # -*- coding: utf-8 -*-
 import argparse
 import math
+from pathlib import Path
 import re
 import sys
 import time
 from dmxpy.DmxPy import *
 
 data = [0, 0, 0, 0, 0, 0]
+
+textfile = Path(Path.home(), "Documents", "lightdata.txt")
+print(textfile)
 
 CHANNELS = 6
 
@@ -56,7 +60,7 @@ if not args.blackout and not args.whiteout and not args.demo and not args.colors
 
 if args.change:
     try:
-        with open('lightdata.txt', 'r') as d:
+        with open(textfile, 'r') as d:
             last_value = d.readline()
     except FileNotFoundError:
         print("File lightdata.txt does not exist, will create later.")
@@ -73,12 +77,12 @@ if args.change:
 if args.blackout:
     dmx.blackout()
     dmx.render()
-    with open('lightdata.txt', 'w') as d:
+    with open(textfile, 'w') as d:
         last_value = d.write('000000000000' + '\n')
 elif args.whiteout:
     dmx.whiteout()
     dmx.render()
-    with open('lightdata.txt', 'w') as d:
+    with open(textfile, 'w') as d:
         last_value = d.write('ffffffffffff' + '\n')
 elif args.demo:
     dmx.set_channel(1, 100)
@@ -127,7 +131,7 @@ elif args.colors:
             print(i, value)
     set_dmx_channels(data)
     dmx.render()
-    with open('lightdata.txt', 'w') as d:
+    with open(textfile, 'w') as d:
             for i in range(CHANNELS):
                 d.write('{:0>2x}'.format(data[i]))
             d.write("\n")
