@@ -1,62 +1,89 @@
 #!/usr/bin/env python3
 
-import sys
-
-login = True
-
-if sys.argv[2] == "nologin":
-    login = False
-
-if len(sys.argv) < 5 or len(sys.argv) > 6:
-    print("Number of arguments doesn't make sense!\n")
-    exit(1)
-
 from telnetlib import Telnet as tn
+import argparse
+import sys
 import time
 
-timeout = 8
+parser = argparse.ArgumentParser(description='Control TrippLite PowerAlert UPSes')
+parser.add_argument('-i', '--ip', type=str, default=None,
+                    help='IP address of the UPS. (*None)')
+parser.add_argument('-p', '--passwd', type=str, default=None,
+                    help='PADM password for localadmin. (*None)')
+parser.add_argument('-u', '--ups-version', type=int, default=15,
+                    choices=[12, 15],
+                    help='UPS PADM version to use (12,*15)')
+parser.add_argument('-1', '--port-1', type=str, default=None,
+                    help='Power state for the first outlet. (*None)')
+parser.add_argument('-2', '--port-2', type=str, default=None,
+                    help='Power state for the second outlet. (*None)')
+parser.add_argument('-q', '--quiet', action='store_true',
+                    help='Suppress standard output.')
+parser.add_argument('-v', '--verbose', action='store_true',
+                    help='Prints telnet output.')
+args = parser.parse_args()
 
-act1=sys.argv[3]
-act2=sys.argv[4]
-if not login:
-    act3=sys.argv[5]
+if args.passwd == None or args.ip == None:
+    print("ups_ctl needs a password and ip address!")
+    quit()
 
-ups = tn(sys.argv[1],5214,timeout)
-if login:
-    ups.read_until(b"login: ",timeout)
-    ups.write(b"localadmin\r\n")
-    ups.read_until(b"Password: ",timeout)
-    ups.write((sys.argv[2] + "\r\n").encode("ascii"))
-    ups.read_until(b">> ",timeout)
+timeout = 5
+
+act1=args.port_1
+act2=args.port_2
+
+log = ""
+
+ups = tn(args.ip,5214,timeout)
+if not args.quiet:
+    print("Logging in...")
+log = ups.read_until(b"login: ", 15)
+if args.verbose:
+    print(repr(log))
+ups.write(b"localadmin\r\n")
+log = ups.read_until(b"Password: ",timeout)
+if args.verbose:
+    print(repr(log))
+ups.write((args.passwd + "\r\n").encode("ascii"))
+if args.ups_version == 15:
+    log = ups.read_until(b">> ",timeout)
+    if args.verbose:
+        print(repr(log))
     ups.write(b"e\r\n")
-    ups.read_until(b"$> ",timeout)
+log = ups.read_until(b"$> ",timeout)
+if args.verbose:
+    print(repr(log))
+
+if act1 == "on" or act1 == "off":
+    if not args.quiet:
+        print("Turning load 1 " + act1 + ".")
+    ups.write(("loadctl {} -o 1 --force\r\n".format(act1)).encode("ascii"))
+    log = ups.read_until(b'$> ',timeout)
+    if args.verbose:
+        print(repr(log))
 else:
-    time.sleep(4)
-if login and (act1 == "on" or act1 == "off"):
-    print("Turning load 1 " + act1 + ".")
-    ups.write(("loadctl " + act1 + " -o 1 --force\r\n").encode("ascii"))
-    ups.read_until(b'$> ',timeout)
-elif sys.argv[3] == "on" or act1 == "off":
-    print("Turning load 1 " + act1 + ".")
-    ups.write(("POD1" + act1.upper() + "\r\n").encode("ascii"))
-    time.sleep(2)
+    if not args.quiet:
+        print("Not changing load 1.")
+if act2 == "on" or act2 == "off":
+    if not args.quiet:
+        print("Turning load 2 " + act2 + ".")
+    ups.write(("loadctl {} -o 2 --force\r\n".format(act2)).encode("ascii"))
+    log = ups.read_until(b'$> ',timeout)
+    if args.verbose:
+        print(repr(log))
 else:
-    print("Not changing load 1.")
-if login and (act2 == "on" or act2 == "off"):
-    print("Turning load 2 " + act2 + ".")
-    ups.write(("loadctl " + act2 + " -o 2 --force\r\n").encode("ascii"))
-    ups.read_until(b'$> ',timeout)
-elif act2 == "on" or act2 == "off":
-    print("Turning load 2 " + act2 + ".")
-    ups.write(("POD2" + act2.upper() + "\r\n").encode("ascii"))
-    time.sleep(2)
-else:
-    print("Not changing load 2.")
-if not login and (act3 == "on" or act3 == "off"):
-    print("Turning load 3 " + act3 + ".")
-    ups.write(("POD3" + act3.upper() + "\r\n").encode("ascii"))
-    time.sleep(2)
-if login:
-    ups.write(b"exit\r\n")
-    ups.read_until(b"Farewell, localadmin.\r\r\n")
+    if not args.quiet:
+        print("Not changing load 2.")
+
+if not args.quiet:
+    print("Exiting...")
+ups.write(b"exit\r\n")
+if args.ups_version == 15:
+    log = ups.read_until(b"Farewell, localadmin.\r\r\n")
+    if args.verbose:
+        print(repr(log))
+elif args.ups_version == 12:
+    log = ups.read_until(b"Goodbye.\r\n")
+    if args.verbose:
+        print(repr(log))
 ups.close()
