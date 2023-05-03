@@ -49,6 +49,9 @@ if not args.quiet:
 log = ups.read_until(b"login: ", 15)
 if args.verbose:
     print(repr(log))
+if not log:
+    print("Connection failed somehow.")
+    quit()
 ups.write(b"localadmin\r\n")
 log = ups.read_until(b"Password: ",timeout)
 if args.verbose:
@@ -70,9 +73,6 @@ if act1 == "on" or act1 == "off":
     log = ups.read_until(b'$> ',timeout)
     if args.verbose:
         print(repr(log))
-else:
-    if not args.quiet:
-        print("Not changing load 1.")
 if act2 == "on" or act2 == "off":
     if not args.quiet:
         print("Turning load 2 " + act2 + ".")
@@ -80,9 +80,6 @@ if act2 == "on" or act2 == "off":
     log = ups.read_until(b'$> ',timeout)
     if args.verbose:
         print(repr(log))
-else:
-    if not args.quiet:
-        print("Not changing load 2.")
 
 if not args.quiet:
     print("Exiting...")
