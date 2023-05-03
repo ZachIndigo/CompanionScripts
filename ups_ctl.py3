@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
-from telnetlib import Telnet as tn
 import argparse
-import sys
-import time
 
 parser = argparse.ArgumentParser(description='Control TrippLite PowerAlert UPSes')
+parser.add_argument('-a', '--all-ports', type=str, default=None,
+                    help='Power state for all outlets (overwritten by -1 or -2). (*None)')
 parser.add_argument('-i', '--ip', type=str, default=None,
                     help='IP address of the UPS. (*None)')
 parser.add_argument('-p', '--passwd', type=str, default=None,
@@ -29,8 +28,18 @@ if args.passwd == None or args.ip == None:
 
 timeout = 5
 
-act1=args.port_1
-act2=args.port_2
+act1 = args.all_ports
+act2 = args.all_ports
+if args.port_1:
+    act1 = args.port_1
+if args.port_2:
+    act2 = args.port_2
+
+if act1 == None and act2 == None:
+    print("Not doing anything, because no action provided.")
+
+from telnetlib import Telnet as tn
+import time
 
 log = ""
 
