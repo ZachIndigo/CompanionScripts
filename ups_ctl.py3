@@ -106,7 +106,7 @@ if args.ups_version == 0 and act3 == "on":
 
 if not args.quiet:
     print("Exiting...")
-if not args.ups_version:
+if not args.ups_version == 0:
     ups.write(b"exit\r\n")
     if args.ups_version == 15:
         log = ups.read_until(b"Farewell, localadmin.\r\r\n")
