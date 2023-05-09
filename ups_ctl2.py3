@@ -64,7 +64,7 @@ async def shell(reader, writer):
         output = await reader.read(1024)
         if not output:
             break
-        elif output.endswith('login: '):
+        elif output.endswith('login: ') or output.endswith('Username: '):
             # login
             writer.write('localadmin\n')
         elif output.endswith('Password: '):
