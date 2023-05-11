@@ -60,34 +60,50 @@ import telnetlib3, asyncio
 async def shell(reader, writer):
     global counter
     counter = counter % 8
+    if args.ups_version == 0:
+        sleep(5)
+        writer.write('help\n')
     while True:
         output = await reader.read(1024)
         if not output:
             break
-        elif output.endswith('login: ') or output.endswith('Username: '):
-            # login
-            writer.write('localadmin\n')
-        elif output.endswith('Password: '):
-            # password
-            writer.write('{}\n'.format(args.passwd))
-        elif output.endswith('>> '):
-            # get to the menu
-            writer.write('e\n')
-        elif output.endswith('$> '):
-            # actually do stuff
-            if counter > 3:
-                writer.write('\n')
-                counter = counter - 4
-            elif counter > 1:
-                writer.write('loadctl {} -o 2 --force\n'.format(act2))
-                counter = counter - 2
-            elif counter > 0:
-                writer.write('loadctl {} -o 1 --force\n'.format(act1))
-                counter = 0
-            else:
-                writer.write('quit\n')
-        print(output, flush=True, end='')
-    print()
+        elif args.ups_version == 12 or args.ups_version == 15:
+            if output.endswith('login: ') or output.endswith('Username: '):
+                if not args.quiet:
+                    print('Logging in...\n')
+                # login
+                writer.write('localadmin\n')
+            elif output.endswith('Password: '):
+                # password
+                writer.write('{}\n'.format(args.passwd))
+            elif output.endswith('>> '):
+                # get to the menu
+                writer.write('e\n')
+            elif output.endswith('$> '):
+                # actually do stuff
+                if counter > 3:
+                    if not args.quiet:
+                        print('\nTurning group 3 {}...\n'.format(act3))
+                    writer.write('\n')
+                    counter = counter - 4
+                elif counter > 1:
+                    if not args.quiet:
+                        print('\nTurning group 2 {}...\n'.format(act2))
+                    writer.write('loadctl {} -o 2 --force\n'.format(act2))
+                    counter = counter - 2
+                elif counter > 0:
+                    if not args.quiet:
+                        print('\nTurning group 1 {}...\n'.format(act1))
+                    writer.write('loadctl {} -o 1 --force\n'.format(act1))
+                    counter = 0
+                else:
+                    if not args.quiet:
+                        print('\nLogging off...\n')
+                    writer.write('quit\n')
+        if args.verbose:
+            print(output, flush=True, end='')
+    if args.verbose:
+        print()
 
 loop = asyncio.get_event_loop()
 coro = telnetlib3.open_connection(args.ip, 5214, shell=shell)
