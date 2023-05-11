@@ -61,6 +61,8 @@ async def shell(reader, writer):
     global counter
     counter = counter % 8
     if args.ups_version == 0:
+        if not args.quiet:
+            print('Connecting...\n')
         sleep(5)
         writer.write('help\n')
     while True:
