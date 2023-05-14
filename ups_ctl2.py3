@@ -56,7 +56,6 @@ if act3 == "on" or act3 == "off":
     counter = counter + 0b100
 
 import telnetlib3, asyncio
-from time import sleep
 
 async def shell(reader, writer):
     global counter
@@ -64,7 +63,6 @@ async def shell(reader, writer):
     if args.ups_version == 0:
         if not args.quiet:
             print('Connecting...\n')
-        sleep(5)
         writer.write('help\r\n')
     if args.verbose:
         print()
@@ -95,7 +93,7 @@ async def shell(reader, writer):
                     counter = 0
                     writer.write('POD1{}\r\n'.format(act1))
                 else:
-                    exit
+                    return
         elif args.ups_version == 12 or args.ups_version == 15:
             if output.endswith('login: ') or output.endswith('Username: '):
                 if not args.quiet:
