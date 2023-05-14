@@ -56,6 +56,7 @@ if act3 == "on" or act3 == "off":
     counter = counter + 0b100
 
 import telnetlib3, asyncio
+from time import sleep
 
 async def shell(reader, writer):
     global counter
@@ -64,11 +65,37 @@ async def shell(reader, writer):
         if not args.quiet:
             print('Connecting...\n')
         sleep(5)
-        writer.write('help\n')
+        writer.write('help\r\n')
+    if args.verbose:
+        print()
     while True:
         output = await reader.read(1024)
         if not output:
             break
+        elif args.ups_version == 0:
+            if output.endswith('>'):
+                if counter > 0b111:
+                    counter = counter - 0b1000
+                elif counter > 0b11:
+                    if not args.quiet:
+                        print('Turning group 3 {}...\n'.format(act3))
+                    # login
+                    counter = counter - 0b100
+                    writer.write('POD3{}\r\n'.format(act3))
+                elif counter > 0b1:
+                    if not args.quiet:
+                        print('Turning group 2 {}...\n'.format(act2))
+                    # login
+                    counter = counter - 0b10
+                    writer.write('POD2{}\r\n'.format(act2))
+                elif counter > 0:
+                    if not args.quiet:
+                        print('Turning group 1 {}...\n'.format(act1))
+                    # login
+                    counter = 0
+                    writer.write('POD1{}\r\n'.format(act1))
+                else:
+                    exit
         elif args.ups_version == 12 or args.ups_version == 15:
             if output.endswith('login: ') or output.endswith('Username: '):
                 if not args.quiet:
@@ -83,16 +110,13 @@ async def shell(reader, writer):
                 writer.write('e\n')
             elif output.endswith('$> '):
                 # actually do stuff
-                if counter > 3:
-                    if not args.quiet:
-                        print('\nTurning group 3 {}...\n'.format(act3))
-                    writer.write('\n')
-                    counter = counter - 4
-                elif counter > 1:
+                if counter > 0b11:
+                    counter = counter - 0b100
+                elif counter > 0b1:
                     if not args.quiet:
                         print('\nTurning group 2 {}...\n'.format(act2))
                     writer.write('loadctl {} -o 2 --force\n'.format(act2))
-                    counter = counter - 2
+                    counter = counter - 0b10
                 elif counter > 0:
                     if not args.quiet:
                         print('\nTurning group 1 {}...\n'.format(act1))
