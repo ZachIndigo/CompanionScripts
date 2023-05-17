@@ -68,7 +68,6 @@ async def shell(reader, writer):
     while True:
         output = await reader.read(1024)
         if not output:
-            counter = 0b10000000
             break
         elif args.ups_version == 0:
             if output.endswith('>'):
@@ -134,9 +133,12 @@ coro = telnetlib3.open_connection(args.ip, 5214, shell=shell)
 reader, writer = loop.run_until_complete(coro)
 loop.run_until_complete(writer.protocol.waiter_closed)
 
-if counter == 0b10000000:
-    print("Connection failed, trying again...")
-    sleep(5)
-    coro = telnetlib3.open_connection(args.ip, 5214, shell=shell)
-    reader, writer = loop.run_until_complete(coro)
-    loop.run_until_complete(writer.protocol.waiter_closed)
+for i in range(4):
+    if counter != 0:
+        print("Connection failed, trying again...")
+        sleep(5)
+        coro = telnetlib3.open_connection(args.ip, 5214, shell=shell)
+        reader, writer = loop.run_until_complete(coro)
+        loop.run_until_complete(writer.protocol.waiter_closed)
+    else:
+        break
