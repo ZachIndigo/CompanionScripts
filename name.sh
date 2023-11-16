@@ -15,7 +15,7 @@ EOF
 )"
 
 echo "$SERVICES" | while read i; do
-if [ "$DATEFMT" -ge "$(echo $i | cut -d' ' -f1)" -a "$DATEFMT" -le "$(echo $i | cut -d' ' -f2)" ]; then
+if [ "$DATEFMT" -ge "$(echo "$i" | cut -d' ' -f1)" -a "$DATEFMT" -le "$(echo "$i" | cut -d' ' -f2)" ]; then
     echo "$CAMPUS $PART_OF_SERVICE $DATE - $(echo "$i" | cut -d' ' -f3,4)"
     exit
   fi
