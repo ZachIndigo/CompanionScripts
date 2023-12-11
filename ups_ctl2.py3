@@ -46,21 +46,21 @@ if act1 == None and act2 == None and act3 == None:
     print("Not doing anything, because no action provided.")
     quit()
 
-counter = 0
+action_bitmask = 0
 
 if act1 == "on" or act1 == "off":
-    counter = counter + 0b1
+    action_bitmask = action_bitmask + 0b1
 if act2 == "on" or act2 == "off":
-    counter = counter + 0b10
+    action_bitmask = action_bitmask + 0b10
 if act3 == "on" or act3 == "off":
-    counter = counter + 0b100
+    action_bitmask = action_bitmask + 0b100
 
 import telnetlib3, asyncio
 from time import sleep
 
 async def shell(reader, writer):
-    global counter
-    counter = counter % 8
+    global action_bitmask
+    action_bitmask = action_bitmask % 0b1000
     if args.ups_version == 0:
         if not args.quiet:
             print('Connecting...\n')
@@ -71,25 +71,25 @@ async def shell(reader, writer):
             break
         elif args.ups_version == 0:
             if output.endswith('>'):
-                if counter > 0b111:
-                    counter = counter - 0b1000
-                elif counter > 0b11:
+                if action_bitmask > 0b111:
+                    action_bitmask = action_bitmask - 0b1000
+                elif action_bitmask > 0b11:
                     if not args.quiet:
                         print('Turning group 3 {}...\n'.format(act3))
                     # login
-                    counter = counter - 0b100
+                    action_bitmask = action_bitmask - 0b100
                     writer.write('POD3{}\r\n'.format(act3))
-                elif counter > 0b1:
+                elif action_bitmask > 0b1:
                     if not args.quiet:
                         print('Turning group 2 {}...\n'.format(act2))
                     # login
-                    counter = counter - 0b10
+                    action_bitmask = action_bitmask - 0b10
                     writer.write('POD2{}\r\n'.format(act2))
-                elif counter > 0:
+                elif action_bitmask > 0:
                     if not args.quiet:
                         print('Turning group 1 {}...\n'.format(act1))
                     # login
-                    counter = 0
+                    action_bitmask = 0
                     writer.write('POD1{}\r\n'.format(act1))
                 else:
                     return
@@ -107,18 +107,18 @@ async def shell(reader, writer):
                 writer.write('e\n')
             elif output.endswith('$> '):
                 # actually do stuff
-                if counter > 0b11:
-                    counter = counter - 0b100
-                elif counter > 0b1:
+                if action_bitmask > 0b11:
+                    action_bitmask = action_bitmask - 0b100
+                elif action_bitmask > 0b1:
                     if not args.quiet:
                         print('\nTurning group 2 {}...\n'.format(act2))
                     writer.write('loadctl {} -o 2 --force\n'.format(act2))
-                    counter = counter - 0b10
-                elif counter > 0:
+                    action_bitmask = action_bitmask - 0b10
+                elif action_bitmask > 0:
                     if not args.quiet:
                         print('\nTurning group 1 {}...\n'.format(act1))
                     writer.write('loadctl {} -o 1 --force\n'.format(act1))
-                    counter = 0
+                    action_bitmask = 0
                 else:
                     if not args.quiet:
                         print('\nLogging off...\n')
@@ -134,7 +134,7 @@ reader, writer = loop.run_until_complete(coro)
 loop.run_until_complete(writer.protocol.waiter_closed)
 
 for i in range(4):
-    if counter != 0:
+    if action_bitmask != 0:
         print("Connection failed, trying again...")
         sleep(5)
         coro = telnetlib3.open_connection(args.ip, 5214, shell=shell)
