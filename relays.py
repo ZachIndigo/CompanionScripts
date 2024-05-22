@@ -10,9 +10,9 @@ ipaddress = ""
 def ctlrelay(ctl):
     client = ModbusTcpClient(ipaddress)
     client.connect()
-    for relay in range(2,10):
+    for relay in range(2,12):
         client.write_coils(relay, ctl)
-    result = client.read_coils(2, 8, slave=1)
+    result = client.read_coils(2, 10, slave=1)
     print(result.bits)
     client.close()
 
