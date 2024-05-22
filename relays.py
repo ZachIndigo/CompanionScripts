@@ -52,6 +52,6 @@ for iterator in range(1,len(sys.argv)):
             printhelp()
             exit()
 
-print("turn on:", ctl, "relay:", relays)
+print("turn on:", ctl)
 
 ctlrelay(ctl)
