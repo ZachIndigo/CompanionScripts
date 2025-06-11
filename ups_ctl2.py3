@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 
+import asyncio
+import telnetlib3
+from time import sleep
 import argparse
 
-parser = argparse.ArgumentParser(description='Control TrippLite PowerAlert UPSes')
+parser = argparse.ArgumentParser(
+    description='Control TrippLite PowerAlert UPSes')
 parser.add_argument('-a', '--all-ports', type=str, default=None,
-                    help='Power state for all outlets (overwritten by -1 or -2). (*None)')
+                    help='Power state for all outlets (overwritten by -1 or \
+                            -2). (*None)')
 parser.add_argument('-i', '--ip', type=str, default=None,
                     help='IP address of the UPS. (*None)')
 parser.add_argument('-p', '--passwd', type=str, default=None,
@@ -17,14 +22,15 @@ parser.add_argument('-1', '--port-1', type=str, default=None,
 parser.add_argument('-2', '--port-2', type=str, default=None,
                     help='Power state for the second outlet. (*None)')
 parser.add_argument('-3', '--port-3', type=str, default=None,
-                    help='Power state for the third outlet (only applicable for JuiceGeese). (*None)')
+                    help='Power state for the third outlet (only applicable \
+                            for JuiceGeese). (*None)')
 parser.add_argument('-q', '--quiet', action='store_true',
                     help='Suppress standard output.')
 parser.add_argument('-v', '--verbose', action='store_true',
                     help='Prints telnet output.')
 args = parser.parse_args()
 
-if (args.passwd == None and args.ups_version != 0) or args.ip == None:
+if (args.passwd is None and args.ups_version != 0) or args.ip is None:
     print("ups_ctl needs a password (if not a JuiceGoose) and ip address!")
     quit()
 
@@ -42,7 +48,7 @@ if args.port_2:
     act2 = args.port_2
 if args.ups_version == 0 and args.port_3:
     act3 = args.port_3
-if act1 == None and act2 == None and act3 == None:
+if act1 is None and act2 is None and act3 is None:
     print("Not doing anything, because no action provided.")
     quit()
 
@@ -55,8 +61,6 @@ if act2 == "on" or act2 == "off":
 if act3 == "on" or act3 == "off":
     action_bitmask = action_bitmask + 0b100
 
-import telnetlib3, asyncio
-from time import sleep
 
 async def shell(reader, writer):
     global action_bitmask
