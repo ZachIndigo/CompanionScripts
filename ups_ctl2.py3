@@ -62,71 +62,84 @@ if act3 == "on" or act3 == "off":
     action_bitmask = action_bitmask + 0b100
 
 
+def version_0(output, action_bitmask, acts, writer, quiet):
+    if output.endswith('>'):
+        if action_bitmask > 0b111:
+            action_bitmask = action_bitmask % 0b1000
+        elif action_bitmask > 0b11:
+            if not quiet:
+                print('Turning group 3 {}...\n'.format(acts[3]))
+            # login
+            action_bitmask = action_bitmask - 0b100
+            writer.write('POD3{}\r\n'.format(acts[3]))
+        elif action_bitmask > 0b1:
+            if not quiet:
+                print('Turning group 2 {}...\n'.format(acts[2]))
+            # login
+            action_bitmask = action_bitmask - 0b10
+            writer.write('POD2{}\r\n'.format(acts[2]))
+        elif action_bitmask > 0:
+            if not quiet:
+                print('Turning group 1 {}...\n'.format(acts[1]))
+            # login
+            action_bitmask = 0
+            writer.write('POD1{}\r\n'.format(acts[1]))
+        return action_bitmask
+    return -1
+
+
+def version_12(output, action_bitmask, acts, writer, args):
+    if output.endswith('login: ') or output.endswith('Username: '):
+        if not args.quiet:
+            print('Logging in...\n')
+        # login
+        writer.write('localadmin\n')
+    elif output.endswith('Password: '):
+        # password
+        writer.write('{}\n'.format(args.passwd))
+    elif output.endswith('>> '):
+        # get to the menu
+        writer.write('e\n')
+    elif output.endswith('$> '):
+        # actually do stuff
+        if action_bitmask > 0b11:
+            action_bitmask = action_bitmask % 0b100
+        elif action_bitmask > 0b1:
+            if not args.quiet:
+                print('\nTurning group 2 {}...\n'.format(acts[2]))
+            writer.write('loadctl {} -o 2 --force\n'.format(acts[2]))
+            action_bitmask = action_bitmask - 0b10
+        elif action_bitmask > 0:
+            if not args.quiet:
+                print('\nTurning group 1 {}...\n'.format(acts[1]))
+            writer.write('loadctl {} -o 1 --force\n'.format(acts[1]))
+            action_bitmask = 0
+        else:
+            if not args.quiet:
+                print('\nLogging off...\n')
+            writer.write('quit\n')
+            action_bitmask = -1
+    return action_bitmask
+
+
 async def shell(reader, writer):
     global action_bitmask
     action_bitmask = action_bitmask % 0b1000
+    acts = [act1, act2, act3]
     if args.ups_version == 0:
         if not args.quiet:
             print('Connecting...\n')
         writer.write('help\r\n')
-    while True:
+    while action_bitmask >= 0:
         output = await reader.read(1024)
         if not output:
             break
         elif args.ups_version == 0:
             if output.endswith('>'):
-                if action_bitmask > 0b111:
-                    action_bitmask = action_bitmask - 0b1000
-                elif action_bitmask > 0b11:
-                    if not args.quiet:
-                        print('Turning group 3 {}...\n'.format(act3))
-                    # login
-                    action_bitmask = action_bitmask - 0b100
-                    writer.write('POD3{}\r\n'.format(act3))
-                elif action_bitmask > 0b1:
-                    if not args.quiet:
-                        print('Turning group 2 {}...\n'.format(act2))
-                    # login
-                    action_bitmask = action_bitmask - 0b10
-                    writer.write('POD2{}\r\n'.format(act2))
-                elif action_bitmask > 0:
-                    if not args.quiet:
-                        print('Turning group 1 {}...\n'.format(act1))
-                    # login
-                    action_bitmask = 0
-                    writer.write('POD1{}\r\n'.format(act1))
-                else:
-                    return
+                version_0(output, action_bitmask, acts, writer, args.quiet)
+                return
         elif args.ups_version == 12 or args.ups_version == 15:
-            if output.endswith('login: ') or output.endswith('Username: '):
-                if not args.quiet:
-                    print('Logging in...\n')
-                # login
-                writer.write('localadmin\n')
-            elif output.endswith('Password: '):
-                # password
-                writer.write('{}\n'.format(args.passwd))
-            elif output.endswith('>> '):
-                # get to the menu
-                writer.write('e\n')
-            elif output.endswith('$> '):
-                # actually do stuff
-                if action_bitmask > 0b11:
-                    action_bitmask = action_bitmask - 0b100
-                elif action_bitmask > 0b1:
-                    if not args.quiet:
-                        print('\nTurning group 2 {}...\n'.format(act2))
-                    writer.write('loadctl {} -o 2 --force\n'.format(act2))
-                    action_bitmask = action_bitmask - 0b10
-                elif action_bitmask > 0:
-                    if not args.quiet:
-                        print('\nTurning group 1 {}...\n'.format(act1))
-                    writer.write('loadctl {} -o 1 --force\n'.format(act1))
-                    action_bitmask = 0
-                else:
-                    if not args.quiet:
-                        print('\nLogging off...\n')
-                    writer.write('quit\n')
+            version_12(output, action_bitmask, acts, writer, args)
         if args.verbose:
             print(output, flush=True, end='')
     if args.verbose:
