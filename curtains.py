@@ -7,6 +7,7 @@ from time import sleep
 timetomove = 45
 ipaddress = ""
 
+
 def movecurtain(breakernumbers):
     client = ModbusTcpClient(ipaddress)
     client.connect()
@@ -21,15 +22,18 @@ def movecurtain(breakernumbers):
     print(result.bits)
     client.close()
 
+
 def printhelp():
-    print("curtains.py controls the web relays for the curtains at the 288 New Hope campus.\n" +
+    print("curtains.py controls the web relays for the curtains at the 288 \
+            New Hope campus.\n" +
           "\tusage:" +
-          "\tscreen.py [-c X] [-u/-d]\n" + 
+          "\tscreen.py [-c X] [-u/-d]\n" +
           "\tscreen.py -h\n" +
           "\t-c X) curtain to control\n" +
           "\t-u) roll curtain(s) up\n" +
           "\t-d) roll curtain(s) down\n" +
           "\t-h) print this message")
+
 
 if len(sys.argv) < 2 or len(sys.argv) > 4:
     print("Wrong number of arguments!\n")
@@ -40,12 +44,12 @@ direction = -1
 curtains = 0
 skip = 0
 
-curtain1 = [ 2, 6 ]
-curtain2 = [ 3, 7 ]
-curtain3 = [ 4, 8 ]
-curtain4 = [ 5, 9 ]
+curtain1 = [2, 6]
+curtain2 = [3, 7]
+curtain3 = [4, 8]
+curtain4 = [5, 9]
 
-for iterator in range(1,len(sys.argv)):
+for iterator in range(1, len(sys.argv)):
     if (skip > 0):
         skip = skip - 1
         continue
@@ -73,7 +77,7 @@ if direction < 0 or direction > 1:
     printhelp()
     exit(1)
 
-curtainarray = [ ]
+curtainarray = []
 match curtains:
     case 0:
         curtainarray.append(curtain1[direction])
