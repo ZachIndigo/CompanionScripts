@@ -1,0 +1,40 @@
+Camera 1|CAM1
+Camera 2|CAM2
+Camera 3|CAM3
+Camera 4|CAM4
+Hub 1|HUB1
+Hub 2|HUB2
+Hub 3|HUB3
+Hub 4|HUB4
+Input 9|IN9
+Input 10|IN10
+Input 11|IN11
+Room Cam|ROOM
+Foldback|FB
+Loop|LOOP
+CG|CG
+CG Key|KEY
+Input 17|IN17
+Graphics|GFX
+Production Desk|PDSK
+Input 20|IN20
+Input 21|IN21
+Input 22|IN22
+Input 23|IN23
+Input 24|IN24
+Playback Deck|PLAY
+Record Deck|REC
+Input 27|IN27
+Input 28|IN28
+Input 29|IN29
+Input 30|IN30
+Input 31|IN31
+Input 32|IN32
+Input 33|IN33
+Input 34|IN34
+Input 35|IN35
+Input 36|IN36
+Input 37|IN37
+M/E 1 Loopback|ME1
+PTP 1|PTP1
+PTP 2|PTP2
